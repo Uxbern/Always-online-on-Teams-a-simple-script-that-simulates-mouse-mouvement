@@ -1,0 +1,41 @@
+Add-Type @"
+using System;
+using System.Runtime.InteropServices;
+
+public class MouseSimulator {
+    [DllImport("user32.dll", CharSet = CharSet.Auto, CallingConvention = CallingConvention.StdCall)]
+    public static extern void mouse_event(long dwFlags, long dx, long dy, long cButtons, long dwExtraInfo);
+
+    private const int MOUSEEVENTF_MOVE = 0x0001;
+    private const int MOUSEEVENTF_LEFTDOWN = 0x0002;
+    private const int MOUSEEVENTF_LEFTUP = 0x0004;
+
+    public static void MoveMouse(int xDelta, int yDelta) {
+        mouse_event(MOUSEEVENTF_MOVE, xDelta, yDelta, 0, 0);
+    }
+
+    public static void ClickMouse() {
+        mouse_event(MOUSEEVENTF_LEFTDOWN | MOUSEEVENTF_LEFTUP, 0, 0, 0, 0);
+    }
+}
+"@
+
+function Keep-Alive {
+    while ($true) {
+        # Move mouse slightly
+        [MouseSimulator]::MoveMouse(1, 1)
+        Start-Sleep -Milliseconds 100
+        [MouseSimulator]::MoveMouse(-1, -1)
+
+        # Optionally, simulate a mouse click
+        #[MouseSimulator]::ClickMouse()
+
+        # Print a message to indicate the script is running
+        Write-Output "Mouse moved at $(Get-Date)"
+        
+        # Wait for 30 seconds before the next move
+        Start-Sleep -Seconds 30
+    }
+}
+
+Keep-Alive
